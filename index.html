@@ -140,13 +140,20 @@
 
   <div class="topbar">
     <div class="brand">CodeAcademy <span class="tag">v1</span></div>
-    <button class="icon-btn" id="resetProgressBtn">Сбросить прогресс</button>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="icon-btn" id="streakDisplay" style="cursor:default;">🔥 0 дней подряд</span>
+      <button class="icon-btn" id="exportProgressBtn">Экспорт прогресса</button>
+      <button class="icon-btn" id="importProgressBtn">Импорт</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;">
+      <button class="icon-btn" id="resetProgressBtn">Сбросить прогресс</button>
+    </div>
   </div>
 
   <!-- ЭКРАН 1: выбор языка -->
   <div class="screen active" id="screenLanguages">
     <h1>Чему учимся сегодня?</h1>
     <p class="sub">Выбери язык — программа выстроена по дням, от основ до продвинутого уровня. Прогресс сохраняется на этом устройстве, к прошлым урокам можно вернуться в любой момент.</p>
+    <div class="banner" id="continueBanner" style="display:none; cursor:pointer;"></div>
     <div class="lang-grid" id="langGrid"></div>
   </div>
 
@@ -198,6 +205,7 @@
         <button class="btn-primary" id="runBtn">▶ Проверить</button>
         <button class="btn-secondary" id="resetCodeBtn">↺ Сбросить код</button>
         <button class="btn-secondary" id="showSolutionBtn">💡 Показать решение</button>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted); align-self:center;">Ctrl+Enter — быстрый запуск</span>
       </div>
       <iframe id="htmlPreview" style="display:none;"></iframe>
       <div class="output-box" id="outputBox"></div>
