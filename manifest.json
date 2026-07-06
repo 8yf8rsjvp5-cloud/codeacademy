@@ -1,0 +1,15 @@
+{
+  "name": "CodeAcademy — учи языки программирования",
+  "short_name": "CodeAcademy",
+  "description": "Пошаговое обучение Python, JavaScript, HTML/CSS, Java и C++ с практикой и голосовым объяснением",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12161b",
+  "theme_color": "#12161b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
