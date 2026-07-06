@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CodeAcademy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12161b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CodeAcademy">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#12161b; --panel:#1b2129; --panel-raised:#232b34;
+    --copper:#c98a4b; --copper-bright:#e0a868; --teal:#5fb8a8;
+    --text:#eae6df; --text-muted:#8b93a1; --line:#2b3340;
+    --danger:#c65c4a; --ok:#5fb8a8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(ellipse at top,#1a2028 0%,var(--bg) 60%);
+    color:var(--text); font-family:'Inter',sans-serif; min-height:100vh;
+  }
+  .app{max-width:900px;margin:0 auto;padding:20px 16px 60px;}
+
+  /* ---------- header ---------- */
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:10px;}
+  .brand{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; display:flex; align-items:center; gap:8px;}
+  .brand .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--teal); border:1px solid var(--teal); border-radius:5px; padding:2px 6px;}
+  .icon-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--text-muted);
+    border-radius:9px; padding:9px 12px; cursor:pointer; font-size:13px; font-family:'Inter',sans-serif;
+  }
+  .icon-btn:hover{color:var(--text); border-color:var(--teal);}
+
+  /* ---------- screens ---------- */
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* ---------- language grid ---------- */
+  h1{font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,5vw,32px); margin:6px 0 6px;}
+  .sub{color:var(--text-muted); font-size:14px; line-height:1.5; margin-bottom:22px; max-width:560px;}
+  .lang-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px;}
+  .lang-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:20px; cursor:pointer; transition:border-color .15s, transform .12s;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .lang-card:hover{border-color:var(--teal); transform:translateY(-2px);}
+  .lang-card .emoji{font-size:30px;}
+  .lang-card .name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px;}
+  .lang-card .desc{font-size:12.5px; color:var(--text-muted); line-height:1.4;}
+  .progress-bar{height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:4px;}
+  .progress-bar .fill{height:100%; background:var(--teal); border-radius:3px; transition:width .3s;}
+  .lang-card .pct{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted);}
+  .real-exec-badge{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--teal); border:1px solid var(--teal); border-radius:5px; padding:1px 6px; align-self:flex-start;}
+  .sim-badge{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--copper-bright); border:1px solid var(--copper); border-radius:5px; padding:1px 6px; align-self:flex-start;}
+
+  /* ---------- lesson list ---------- */
+  .back-row{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .lesson-list{display:flex; flex-direction:column; gap:8px;}
+  .lesson-item{
+    display:flex; align-items:center; gap:12px; background:var(--panel);
+    border:1px solid var(--line); border-radius:11px; padding:13px 16px; cursor:pointer;
+    transition:border-color .15s;
+  }
+  .lesson-item:hover{border-color:var(--teal);}
+  .lesson-item.locked{opacity:.45; cursor:not-allowed;}
+  .lesson-item .day-badge{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--bg); background:var(--text-muted);
+    border-radius:6px; padding:4px 8px; flex-shrink:0; min-width:52px; text-align:center;
+  }
+  .lesson-item.done .day-badge{background:var(--teal);}
+  .lesson-item .l-title{font-weight:600; font-size:14.5px; flex:1;}
+  .lesson-item .l-status{font-size:16px;}
+
+  /* ---------- lesson view ---------- */
+  .lesson-header{margin-bottom:14px;}
+  .lesson-header .day-tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.08em; text-transform:uppercase;}
+  .lesson-header h2{font-family:'Space Grotesk',sans-serif; font-size:22px; margin:6px 0;}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px;}
+  .panel h3{font-family:'Space Grotesk',sans-serif; font-size:14px; margin:0 0 10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;}
+  .explanation{font-size:14.5px; line-height:1.7; white-space:pre-wrap;}
+  .explanation code{background:var(--panel-raised); padding:2px 6px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--copper-bright);}
+
+  .tts-row{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center;}
+  button{font-family:'Inter',sans-serif; cursor:pointer; border:none; border-radius:9px; font-weight:600; font-size:13.5px; padding:10px 18px; transition:transform .12s,background .15s;}
+  button:active{transform:scale(0.97);}
+  .btn-primary{background:var(--copper); color:#191410;}
+  .btn-primary:hover{background:var(--copper-bright);}
+  .btn-secondary{background:var(--panel-raised); color:var(--text); border:1px solid var(--line);}
+  .btn-secondary.active-voice{border-color:var(--teal); color:var(--teal);}
+  .btn-secondary:disabled{opacity:.4; cursor:not-allowed;}
+
+  pre.code-block{
+    background:#0d1116; border:1px solid var(--line); border-radius:10px; padding:14px 16px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; overflow-x:auto; line-height:1.55; margin:0;
+  }
+
+  textarea#codeEditor{
+    width:100%; min-height:160px; background:#0d1116; border:1px solid var(--line); border-radius:10px;
+    color:#eae6df; font-family:'IBM Plex Mono',monospace; font-size:13.5px; padding:14px 16px;
+    line-height:1.55; resize:vertical; tab-size:4;
+  }
+  textarea#codeEditor:focus{outline:none; border-color:var(--teal);}
+
+  .run-row{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+
+  .output-box{
+    margin-top:12px; border-radius:10px; padding:14px 16px; font-family:'IBM Plex Mono',monospace; font-size:13px;
+    white-space:pre-wrap; line-height:1.6; display:none;
+  }
+  .output-box.show{display:block;}
+  .output-box.ok{background:rgba(95,184,168,0.1); border:1px solid var(--teal);}
+  .output-box.fail{background:rgba(198,92,74,0.1); border:1px solid var(--danger);}
+  .output-box .hint{color:var(--copper-bright); margin-top:8px; font-family:'Inter',sans-serif; font-size:13px;}
+
+  iframe#htmlPreview{
+    width:100%; height:220px; border:1px solid var(--line); border-radius:10px; background:#fff; margin-top:10px;
+  }
+
+  .lesson-nav{display:flex; justify-content:space-between; margin-top:20px; gap:10px;}
+
+  .banner{background:#2a2016; border:1px solid var(--copper); color:var(--copper-bright); font-size:12.5px; line-height:1.5; border-radius:10px; padding:12px 14px; margin-bottom:16px;}
+
+  footer{margin-top:30px; font-size:11.5px; color:var(--text-muted); text-align:center; line-height:1.6;}
+
+  .voice-settings{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">CodeAcademy <span class="tag">v1</span></div>
+    <button class="icon-btn" id="resetProgressBtn">Сбросить прогресс</button>
+  </div>
+
+  <!-- ЭКРАН 1: выбор языка -->
+  <div class="screen active" id="screenLanguages">
+    <h1>Чему учимся сегодня?</h1>
+    <p class="sub">Выбери язык — программа выстроена по дням, от основ до продвинутого уровня. Прогресс сохраняется на этом устройстве, к прошлым урокам можно вернуться в любой момент.</p>
+    <div class="lang-grid" id="langGrid"></div>
+  </div>
+
+  <!-- ЭКРАН 2: список уроков языка -->
+  <div class="screen" id="screenLessons">
+    <div class="back-row">
+      <button class="icon-btn" id="backToLangsBtn">← Все языки</button>
+    </div>
+    <h1 id="lessonsLangTitle"></h1>
+    <p class="sub" id="lessonsLangDesc"></p>
+    <div class="lesson-list" id="lessonList"></div>
+  </div>
+
+  <!-- ЭКРАН 3: сам урок -->
+  <div class="screen" id="screenLesson">
+    <div class="back-row">
+      <button class="icon-btn" id="backToLessonsBtn">← К списку уроков</button>
+    </div>
+
+    <div class="lesson-header">
+      <div class="day-tag" id="lessonDayTag"></div>
+      <h2 id="lessonTitle"></h2>
+    </div>
+
+    <div class="panel">
+      <h3>Объяснение</h3>
+      <div class="explanation" id="lessonExplanation"></div>
+      <div class="tts-row">
+        <button class="btn-secondary" id="ttsPlayBtn">🔊 Озвучить объяснение</button>
+        <button class="btn-secondary" id="ttsStopBtn">⏹ Стоп</button>
+        <button class="btn-secondary" id="voiceMaleBtn">♂ Голос: мужской</button>
+        <button class="btn-secondary" id="voiceFemaleBtn">♀ Голос: женский</button>
+      </div>
+    </div>
+
+    <div class="panel" id="examplePanel" style="display:none;">
+      <h3>Пример</h3>
+      <pre class="code-block" id="exampleCode"></pre>
+    </div>
+
+    <div class="panel">
+      <h3>Практика</h3>
+      <div class="explanation" id="exercisePrompt" style="margin-bottom:12px;"></div>
+      <div class="banner" id="simBanner" style="display:none;">
+        ⚠ Для этого языка в браузере нет настоящей компиляции — проверка идёт по структуре кода (ключевые слова, скобки, отступы), а не полноценным запуском программы.
+      </div>
+      <textarea id="codeEditor" spellcheck="false"></textarea>
+      <div class="run-row">
+        <button class="btn-primary" id="runBtn">▶ Проверить</button>
+        <button class="btn-secondary" id="resetCodeBtn">↺ Сбросить код</button>
+        <button class="btn-secondary" id="showSolutionBtn">💡 Показать решение</button>
+      </div>
+      <iframe id="htmlPreview" style="display:none;"></iframe>
+      <div class="output-box" id="outputBox"></div>
+    </div>
+
+    <div class="lesson-nav">
+      <button class="btn-secondary" id="prevLessonBtn">← Предыдущий урок</button>
+      <button class="btn-primary" id="nextLessonBtn" disabled>Следующий урок →</button>
+    </div>
+  </div>
+
+  <footer>
+    Прогресс и настройки голоса хранятся локально на этом устройстве.<br>
+    Python выполняется по-настоящему в браузере (Pyodide). Java и C++ проверяются по структуре кода — реальной компиляции в браузере не существует.
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+<script src="curriculum.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
