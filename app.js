@@ -29,6 +29,37 @@ function saveProgress(progress){
 
 let progress = loadProgress();
 
+// ---------------------------------------------------------------------------
+// Streak (серия дней подряд с активностью) — хранится отдельным ключом
+// ---------------------------------------------------------------------------
+
+const STREAK_KEY = 'codeacademy-streak-v1';
+
+function todayStr(){
+  return new Date().toISOString().slice(0,10); // YYYY-MM-DD
+}
+
+function updateStreak(){
+  let streak;
+  try { streak = JSON.parse(localStorage.getItem(STREAK_KEY)) || {count:0, lastDate:null}; }
+  catch(e){ streak = {count:0, lastDate:null}; }
+
+  const today = todayStr();
+  if (streak.lastDate === today){
+    // уже отмечались сегодня — ничего не меняем
+  } else {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    if (streak.lastDate === yesterday){
+      streak.count += 1;       // пришёл на следующий день подряд
+    } else {
+      streak.count = 1;        // пропустил день(и) — серия начинается заново
+    }
+    streak.lastDate = today;
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(streak)); } catch(e){}
+  }
+  document.getElementById('streakDisplay').textContent = `🔥 ${streak.count} ${streak.count === 1 ? 'день' : 'дней'} подряд`;
+}
+
 function isLessonDone(langKey, day){
   return !!(progress[langKey] && progress[langKey].completed && progress[langKey].completed.includes(day));
 }
@@ -59,6 +90,31 @@ function isLessonUnlocked(langKey, dayIndex){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+}
+
+function findNextRecommendedLesson(){
+  // Ищем язык с прогрессом > 0%, но ещё не пройденный полностью — приоритет
+  // "продолжить то, что уже начал", иначе ничего не рекомендуем.
+  for (const key of Object.keys(CURRICULUM)){
+    const lang = CURRICULUM[key];
+    const done = (progress[key] && progress[key].completed) ? progress[key].completed.length : 0;
+    if (done > 0 && done < lang.lessons.length){
+      return {langKey: key, lessonIndex: done, lang, lesson: lang.lessons[done]};
+    }
+  }
+  return null;
+}
+
+function renderContinueBanner(){
+  const banner = document.getElementById('continueBanner');
+  const next = findNextRecommendedLesson();
+  if (!next){
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'block';
+  banner.innerHTML = `▶ Продолжить обучение: <strong>${next.lang.emoji} ${next.lang.name} — День ${next.lesson.day}: ${next.lesson.title}</strong>`;
+  banner.onclick = () => openLesson(next.langKey, next.lessonIndex);
 }
 
 function renderLanguageGrid(){
@@ -160,6 +216,7 @@ function openLesson(langKey, lessonIndex){
 
 document.getElementById('backToLangsBtn').addEventListener('click', () => {
   renderLanguageGrid();
+  renderContinueBanner();
   showScreen('screenLanguages');
 });
 
@@ -197,6 +254,50 @@ document.getElementById('resetProgressBtn').addEventListener('click', () => {
     progress = {};
     saveProgress(progress);
     renderLanguageGrid();
+    renderContinueBanner();
+  }
+});
+
+document.getElementById('exportProgressBtn').addEventListener('click', () => {
+  const data = JSON.stringify({ progress, exportedAt: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'codeacademy-progress.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importProgressBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+
+document.getElementById('importFileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.progress) throw new Error('Файл не похож на экспорт прогресса CodeAcademy.');
+      progress = parsed.progress;
+      saveProgress(progress);
+      renderLanguageGrid();
+      renderContinueBanner();
+      alert('Прогресс успешно импортирован.');
+    } catch(err){
+      alert('Не удалось прочитать файл: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('codeEditor').addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault();
+    handleRun();
   }
 });
 
@@ -411,6 +512,8 @@ document.getElementById('ttsStopBtn').addEventListener('click', () => {
 // ---------------------------------------------------------------------------
 
 renderLanguageGrid();
+renderContinueBanner();
+updateStreak();
 
 if ('serviceWorker' in navigator){
   window.addEventListener('load', () => {
