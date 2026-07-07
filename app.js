@@ -252,11 +252,17 @@ function setEditorCode(code){
 document.getElementById('resetCodeBtn').addEventListener('click', () => {
   const lesson = CURRICULUM[state.currentLang].lessons[state.currentLessonIndex];
   setEditorCode(lesson.starter || '');
+  const outputBox = document.getElementById('outputBox');
+  outputBox.className = 'output-box';
+  outputBox.textContent = '';
 });
 
 document.getElementById('showSolutionBtn').addEventListener('click', () => {
   const lesson = CURRICULUM[state.currentLang].lessons[state.currentLessonIndex];
   setEditorCode(lesson.solution || '');
+  const outputBox = document.getElementById('outputBox');
+  outputBox.className = 'output-box show';
+  outputBox.textContent = '💡 Решение подставлено в редактор. Нажми «Проверить», чтобы увидеть, как оно засчитывается.';
 });
 
 document.getElementById('resetProgressBtn').addEventListener('click', () => {
