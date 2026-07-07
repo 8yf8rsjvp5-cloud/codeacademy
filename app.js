@@ -239,14 +239,24 @@ document.getElementById('nextLessonBtn').addEventListener('click', () => {
   }
 });
 
+function setEditorCode(code){
+  document.getElementById('codeEditor').value = code;
+  // Для HTML/CSS уроков превью должно обновляться вместе с кодом —
+  // раньше "Сбросить код" и "Показать решение" меняли только textarea,
+  // а iframe с превью продолжал показывать старую версию.
+  if (state.currentLang && CURRICULUM[state.currentLang].runtime === 'html'){
+    document.getElementById('htmlPreview').srcdoc = code;
+  }
+}
+
 document.getElementById('resetCodeBtn').addEventListener('click', () => {
   const lesson = CURRICULUM[state.currentLang].lessons[state.currentLessonIndex];
-  document.getElementById('codeEditor').value = lesson.starter || '';
+  setEditorCode(lesson.starter || '');
 });
 
 document.getElementById('showSolutionBtn').addEventListener('click', () => {
   const lesson = CURRICULUM[state.currentLang].lessons[state.currentLessonIndex];
-  document.getElementById('codeEditor').value = lesson.solution || '';
+  setEditorCode(lesson.solution || '');
 });
 
 document.getElementById('resetProgressBtn').addEventListener('click', () => {
